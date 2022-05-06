@@ -1,0 +1,4 @@
+{
+    "use_batch_norm" : true
+    "use_residual": true
+}
