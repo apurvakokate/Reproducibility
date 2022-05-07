@@ -1,4 +1,6 @@
 {
-    "use_batch_norm" : true
-    "use_residual": true
+    "use_batch_norm" : false,
+    "use_residual": true,
+    "use_layernorm" : true,
+    "seeds": [0,1,2,3]
 }

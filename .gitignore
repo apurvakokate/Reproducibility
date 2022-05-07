@@ -1,0 +1,4 @@
+.ipynb_checkpoints/train-checkpoint.ipynb
+cifar_net.pth
+configs/.ipynb_checkpoints/exp_01-checkpoint.json
+models
