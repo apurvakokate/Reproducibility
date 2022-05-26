@@ -456,7 +456,7 @@ def dlnn_main(cfgs, runs:int=2, epochs:int=10):
   
   
   data_fullname = ["MNIST", "FMNIST", "CIFAR10", "SVHN", "CIFAR100"]
-  optim_fullname = ["SGD","SGD+Momentum", "Adam", "AutoSGD"]
+  optim_fullname = ["SGD","SGD+Momentum", "Adam"]
 
   
   datalist = ["mnist", "fmnist", "cifar10", "svhn", "cifar100"]
@@ -847,7 +847,7 @@ if __name__=='__main__':
     cfgs = json.load(cfglist)
   
   runs = 5 # > 1
-  epochs = 10 # > 1
+  epochs = 5 # > 1
   dlnn_main(cfgs,runs,epochs)
   
   torch.cuda.empty_cache() 

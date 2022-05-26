@@ -13,7 +13,7 @@ we would obtain consistent test predictions, no matter how many times, we train 
 
 However our findings show that this is not so. 
 We find that despite, seed control, the model found by the network varies each time it is trained.
-Interestingly, even though test accuracy is close as much as possible. The prediction difference most always varies
+Interestingly, even though test accuracy is close as much as possible. The prediction difference most always varies.
 
 We hope, our findings can add to the adoption of prediction difference tests when reporting neural net results.
 
