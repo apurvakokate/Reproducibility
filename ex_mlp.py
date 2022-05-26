@@ -541,7 +541,7 @@ def dlnn_main(cfgs, runs:int=2, epochs:int=10):
 def main_opt_runners(cfgs, runs, epochs, gen_seed, batch_size, training_data, test_data, indim, class_num, channels, sgdlr, sgdmlr, adamlr, expdir):
 
   # -Load Data
-  train_dl = DataLoader(training_data,batch_size=batch_size, num_workers=7, shuffle=True,persistent_workers=True,pin_memory=True,worker_init_fn=seed_worker,generator=gen_seed)
+  train_dl = DataLoader(training_data,batch_size=batch_size, num_workers=8, shuffle=True,persistent_workers=True,pin_memory=True,worker_init_fn=seed_worker,generator=gen_seed)
   test_dl = DataLoader(test_data,batch_size=batch_size,num_workers=4,worker_init_fn=seed_worker,persistent_workers=True,generator=gen_seed)
   
   try:
