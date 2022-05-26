@@ -701,7 +701,12 @@ def main_opt_runners(cfgs, runs, epochs, gen_seed, batch_size, training_data, te
    
   # The Wilcoxon T-test. Given n independent samples (xi, yi) from a bivariate distribution (i.e. paired samples), it computes differences di = xi - yi. (OR. Skip this: by supplying with the paired differences, di). One assumption of the test is that the differences are symmetric. 
   # The two-sided test has the null hypothesis that the median of the differences is zero against the alternative that it is different from zero.
-  med_stat, pval = wilcoxon(pdiff_mets)
+  try:
+    med_stat, pval = wilcoxon(pdiff_mets)
+  except ValueError:
+    # ValueError: zero_method 'wilcox' and 'pratt' do not work if x - y is zero for all elements.
+    med_stat, pval = -1, 0.5 # indicative of when the predictions are the same 
+    
   # if pval isn't 0.5, we would reject the null hypothesis at a confidence level of 5%, concluding that the pred. diff across runs is significant.
   
   # e.g: WilcoxonResult(statistic=0.0, pvalue=0.001953125)
