@@ -846,8 +846,8 @@ if __name__=='__main__':
   with open('config.json', 'r') as cfglist:
     cfgs = json.load(cfglist)
   
-  runs = 5
-  epochs = 100
+  runs = 5 # > 1
+  epochs = 10 # > 1
   dlnn_main(cfgs,runs,epochs)
   
   torch.cuda.empty_cache() 
