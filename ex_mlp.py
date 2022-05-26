@@ -1,4 +1,12 @@
+# 
+'''
+MLP REPRODUCIBILITY EXPERIMENT
 
+OREGON STATE UNIVERSITY: AI535 PROJECT SPRING 2022
+
+# Run this file to perform the neural net experiments and comparisons automatically.
+
+'''
 from copy import deepcopy
 import glob
 import os
@@ -21,7 +29,7 @@ from torchvision.transforms import ToTensor, Lambda
 
 from scipy.stats import wilcoxon
 
-import autosgd as metaopt
+# import autosgd as metaopt
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 

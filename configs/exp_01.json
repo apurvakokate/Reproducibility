@@ -1,5 +1,0 @@
-{
-    "use_batch_norm" : false,
-    "use_residual": true,
-    "use_layernorm" : true
-}
