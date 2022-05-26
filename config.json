@@ -1,0 +1,13 @@
+{
+  "optim": "autosgd",
+  "dataset": "cifar10",
+  "model": "mlp",
+  "num_layers": 2,
+  "norms": "false",
+  "noise": "false",
+  "lnoise": "false",
+  "residual": "false",
+  "seed": 0,
+  "epochs": 50,
+  "runs": 5
+}
