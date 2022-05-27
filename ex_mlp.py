@@ -861,8 +861,8 @@ if __name__=='__main__':
   shutil.rmtree("__pycache__",ignore_errors=True)
   
   # 
-  # clear experiment folders if exist,
-  # or archive in oldbins folder.
+  # clear_old_expdir = False : clear experiment folders if exist,
+  # clear_old_expdir = True : or otherwise: archive in oldbins folder.
   clear_old_expdir = False
   
   oldexpdir = glob.glob("./MLP_EXP_*")
