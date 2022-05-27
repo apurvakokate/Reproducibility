@@ -391,7 +391,7 @@ def train_loop(dataloader, model, loss_fcn, optimizer):
       # print(f"Step: {batch:>5d}, Loss:{loss:>7f} [{current:>5d}/{size:>5d}]")
       
   print(f"Batches/Steps/Iterations per Epoch: {num_batches:>5d}")
-  print(f"Train: \n Avg Loss: {train_loss/num_batches:>7f}, Accuracy: {(100*correct/size):>0.1f}%")
+  print(f"Train:\t[ Avg Loss: {train_loss/num_batches:>7f}, Accuracy: {(100*correct/size):>0.1f}% ]", end=' || ')
   
   return train_loss/num_batches, correct/size
       
@@ -419,7 +419,7 @@ def test_loop(dataloader, model, loss_fcn):
       preds.append(Yhat.tolist())
     
     # num_of_batches is used here, since, the loss is computed at each batch
-    print(f"Test: \n Avg loss: {test_loss/num_batches:>8f}, Accuracy: {(100*correct/size):>0.1f}%")
+    print(f"Test:  [ Avg loss: {test_loss/num_batches:>7f}, Accuracy: {(100*correct/size):>0.1f}% ]")
     
   preds = list(itertools.chain.from_iterable(preds))  
   return test_loss/num_batches, correct/size, preds
@@ -536,7 +536,7 @@ def dlnn_main(cfgs, runs:int=2, epochs:int=10, noworkers:int=0):
                 print(f"{optim_fullname[iod]}\n----------")
                 
                 # -- RUNS for each OPTIMs under current cfg
-                train_dl, test_dl, ground_truth, steps_per_epoch, mdl, loss_fcn, optimizer, train_losses, dev_losses, train_accs, dev_accs, preds_list,PathStr = main_opt_runners(cfgs, runs, epochs, gen_seed, batch_size, training_data, test_data, indim, class_num, channels, sgdlr, sgdmlr, adamlr, exp_dir, device)
+                train_dl, test_dl, ground_truth, steps_per_epoch, mdl, loss_fcn, optimizer, train_losses, dev_losses, train_accs, dev_accs, preds_list,PathStr = main_opt_runners(cfgs, runs, epochs, gen_seed, batch_size, training_data, test_data, indim, class_num, channels, sgdlr, sgdmlr, adamlr, exp_dir)
                             
               # -- COMPARE OPTIMs under current cfg:      
               runner_cmps(cfgs, runs, epochs, optim_fullname, optimlist, exp_dir)
@@ -872,7 +872,7 @@ if __name__=='__main__':
     cfgs = json.load(cfglist)
   
   runs = 5 # > 1
-  epochs = 2 # > 1
+  epochs = 1 # > 1
   dlnn_main(cfgs,runs,epochs,0)
   
   torch.cuda.empty_cache() 
