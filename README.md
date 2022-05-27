@@ -17,3 +17,13 @@ Interestingly, even though test accuracy is close as much as possible. The predi
 
 We hope, our findings can add to the adoption of prediction difference tests when reporting neural net results.
 
+
+# Technical Notes
+
+### core python modules 
+```
+numpy==1.22.3
+dash==2.3.1
+scipy==1.8.0
+torch==1.11.0+cu113
+```
