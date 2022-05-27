@@ -391,11 +391,11 @@ def train_loop(dataloader, model, loss_fcn, optimizer):
       # print(f"Step: {batch:>5d}, Loss:{loss:>7f} [{current:>5d}/{size:>5d}]")
       
   print(f"Batches/Steps/Iterations per Epoch: {num_batches:>5d}")
-  print(f"Train: \n Avg Loss: {train_loss/num_batches:>7f}, Accuracy: {(100*correct/size):>0.1f}%")
+  print(f"Train:\t[ Avg Loss: {train_loss/num_batches:>7f}, Accuracy: {(100*correct/size):>0.1f}% ]", end=' || ')
   
   return train_loss/num_batches, correct/size
       
-def loop_test(dataloader, model, loss_fcn):
+def test_loop(dataloader, model, loss_fcn):
   model.eval() # to ensure components like dropout is not used in inference.
   size = len(dataloader.dataset)
   num_batches = len(dataloader)
@@ -419,7 +419,7 @@ def loop_test(dataloader, model, loss_fcn):
       preds.append(Yhat.tolist())
     
     # num_of_batches is used here, since, the loss is computed at each batch
-    print(f"Test: \n Avg loss: {test_loss/num_batches:>8f}, Accuracy: {(100*correct/size):>0.1f}%")
+    print(f"Test:  [ Avg loss: {test_loss/num_batches:>7f}, Accuracy: {(100*correct/size):>0.1f}% ]")
     
   preds = list(itertools.chain.from_iterable(preds))  
   return test_loss/num_batches, correct/size, preds
@@ -427,10 +427,11 @@ def loop_test(dataloader, model, loss_fcn):
 
 #--RUN-------------------------------------------------------------------------
 # run Main 
-def dlnn_main(cfgs, runs:int=2, epochs:int=10):
+def dlnn_main(cfgs, runs:int=2, epochs:int=10, noworkers:int=0):
   
   cfgs['runs'] = runs # should be > 1
   cfgs['epochs'] = epochs
+  cfgs["noworkers"] = noworkers # noworkers, set number of workers to 0, irrespective of device
   
   # Experiment Group counter
   exp_cnter = 0
@@ -449,6 +450,9 @@ def dlnn_main(cfgs, runs:int=2, epochs:int=10):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.enabled = True
     torch.backends.cudnn.benchmark = False
+    cfgs["device"] = "cuda"
+  else:
+    cfgs["device"] = "cpu"
     
   # fix seed for batch generation
   gen_seed = torch.Generator()
@@ -541,8 +545,13 @@ def dlnn_main(cfgs, runs:int=2, epochs:int=10):
 def main_opt_runners(cfgs, runs, epochs, gen_seed, batch_size, training_data, test_data, indim, class_num, channels, sgdlr, sgdmlr, adamlr, expdir):
 
   # -Load Data
-  train_dl = DataLoader(training_data,batch_size=batch_size, num_workers=2, shuffle=True,persistent_workers=True,pin_memory=True,worker_init_fn=seed_worker,generator=gen_seed)
-  test_dl = DataLoader(test_data,batch_size=batch_size,num_workers=2,worker_init_fn=seed_worker,persistent_workers=True,generator=gen_seed)
+  
+  if cfgs["device"] == "cpu" or cfgs["noworkers"]:
+      train_dl = DataLoader(training_data,batch_size=batch_size,shuffle=True,generator=gen_seed)
+      test_dl = DataLoader(test_data,batch_size=batch_size,generator=gen_seed)
+  else:
+      train_dl = DataLoader(training_data,batch_size=batch_size, num_workers=6, shuffle=True,persistent_workers=True,pin_memory=True,worker_init_fn=seed_worker,generator=gen_seed)
+      test_dl = DataLoader(test_data,batch_size=batch_size,num_workers=2,worker_init_fn=seed_worker,persistent_workers=True,generator=gen_seed)
   
   try:
     ground_truth = test_dl.dataset.targets.tolist()
@@ -610,7 +619,7 @@ def main_opt_runners(cfgs, runs, epochs, gen_seed, batch_size, training_data, te
       train_losses.append(loss)
       train_accs.append(acc)
       #
-      loss,acc,test_preds = loop_test(test_dl, mdl, loss_fcn)
+      loss,acc,test_preds = test_loop(test_dl, mdl, loss_fcn)
       dev_losses.append(loss)
       dev_accs.append(acc)
       
@@ -690,10 +699,14 @@ def main_opt_runners(cfgs, runs, epochs, gen_seed, batch_size, training_data, te
       pred_diff = act_pred_diff/total
       pdiff_mets.append(pred_diff)
       
+      
       # Pval
       # _,this_pval = wilcoxon(preds_list[id],preds_list[jd])
       # pval_mets.append(this_pval)
-      
+  
+  #TODO: Effective Test-Accuracy:
+  # mean accuracy - mean pred.difference
+  eff_test_acc = (np.mean(np.array(acc_mets)*total)-np.mean(np.array(act_pdiff_mets)))/total
       
   # Statistical Test on the runs Combination 2 Pdiffs
   # null: paired pred. diffs come from the same distribution, i.e not significant
@@ -719,6 +732,7 @@ def main_opt_runners(cfgs, runs, epochs, gen_seed, batch_size, training_data, te
   # Write current cfg to this stores folder
   # for book-keeping
   run_cfgs = deepcopy(cfgs)
+  run_cfgs['eff_test_accuracy'] = eff_test_acc
   run_cfgs['med_stat'] = med_stat
   run_cfgs['pval'] = pval
   
@@ -765,7 +779,7 @@ def runner_cmps(cfgs, runs, epochs, optim_fullname, optimlist,expdir):
               datay_actpd = []
               # datay_pval = []
               datay_acc = []
-              pdiff_tstats = []
+              eff_test_accs = []
               pdiff_pvals = []
               for iod, optim_name in enumerate(optimlist):
                 cfgs['optim'] = optim_name
@@ -796,7 +810,7 @@ def runner_cmps(cfgs, runs, epochs, optim_fullname, optimlist,expdir):
                 PATHruncfg = f"{expdir}/stores/exp_cfg/cfgs_{PathStr}.json"
                 with open(PATHruncfg, 'r') as cfglist:
                   run_cfgs = json.load(cfglist)
-                pdiff_tstats.append(run_cfgs['med_stat'])
+                eff_test_accs.append(run_cfgs['eff_test_accuracy'])
                 pdiff_pvals.append(run_cfgs['pval'])
               
               
@@ -816,7 +830,6 @@ def runner_cmps(cfgs, runs, epochs, optim_fullname, optimlist,expdir):
               PATHcmp = f"{expdir}/stores/pdiff/actpdiff_cmps_{PathStr}"
               dashplots.actpdiffplot(namex,datay_actpd,runs,figname=PATHcmp,live=False)
               
-              
               # # Box-Plot Comparison
               # PATHcmp = f"{expdir}/stores/pdiff/pval_cmps_{PathStr}"
               # dashplots.pvalplot(namex,datay_pval,runs,figname=PATHcmp,live=False)
@@ -824,6 +837,12 @@ def runner_cmps(cfgs, runs, epochs, optim_fullname, optimlist,expdir):
               # Box-Plot Comparison
               PATHcmp = f"{expdir}/stores/acc/accs_cmps_{PathStr}"
               dashplots.paccplot(namex,datay_acc,runs,figname=PATHcmp,live=False)
+              
+              # Box-Plot Comparison
+              details = {'Optimizer': optim_fullname, 'Effective Test-Accuracy':eff_test_accs}
+              df = pd.DataFrame(details)
+              PATHcmp = f"{expdir}/stores/acc/effaccs_cmps_{PathStr}"
+              dashplots.effpaccplot(namex,df,runs,figname=PATHcmp,live=False)
               
               # Write current cfg to this stores folder
               # for book-keeping
@@ -839,6 +858,7 @@ if __name__=='__main__':
   # clear cached modules if its folder exists
   shutil.rmtree("__pycache__",ignore_errors=True)
   
+  #TODO: instead of clear move to a subfolder in a oldexp folder 
   # clear exp folders if exist
   clear_old_expdir = True
   if clear_old_expdir:
@@ -852,8 +872,8 @@ if __name__=='__main__':
     cfgs = json.load(cfglist)
   
   runs = 5 # > 1
-  epochs = 5 # > 1
-  dlnn_main(cfgs,runs,epochs)
+  epochs = 1 # > 1
+  dlnn_main(cfgs,runs,epochs,0)
   
   torch.cuda.empty_cache() 
   

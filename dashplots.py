@@ -630,18 +630,35 @@ def wilcxstatplot(names,datas,runs,figname="fig1", live=False):
 
   torch.Tensor.ndim = property(lambda self: len(self.shape))  # Fix it
   
-  colorscale = [[0, '#272D31'],[.5, '#d9d9d9'],[1, '#ffffff']]
-  tablefig = ff.create_table(datas,colorscale=colorscale, height_constant=50)
+#   colorscale = [[0, '#272D31'],[.5, '#d9d9d9'],[1, '#ffffff']]
+#   tablefig = ff.create_table(datas,colorscale=colorscale, height_constant=50)
+
+  tablefig = go.Figure(data=[go.Table(
+      columnwidth = [40,60],
+    header=dict(values=['Optimizer (regularizer)', 'Wilcoxon signed-rank test (p-value))'],
+                fill_color='grey',
+                line_color = 'darkslategray',
+                align='left',
+                font = dict(color='white', size=12)
+                ),
+    cells=dict(values=[datas['Optimizer'], datas['p-value']],
+               fill_color='white',
+               line_color = 'darkslategray',
+               align='left',
+               font = dict(color='darkslategray', size=12)
+               )
+    )
+  ])
   
   # Make text size larger
 #   for i in range(len(tablefig.layout.annotations)):
 #     tablefig.layout.annotations[i].font.size = 10
     
   # Make traces for graph
-  tablefig.add_trace(go.Bar(x=datas['Optimizer'], y=datas['p-value'],
-                      marker=dict(color='#404040'),
-                      name='p-value',
-                      xaxis='x2', yaxis='y2'))
+#   tablefig.add_trace(go.Bar(x=datas['Optimizer'], y=datas['p-value'],
+#                       marker=dict(color='#404040'),
+#                       name='p-value',
+#                       xaxis='x2', yaxis='y2'))
   
 
   pio.renderers.default = "pdf+svg+plotly_mimetype+browser+png+vscode+colab+json"
@@ -652,46 +669,12 @@ def wilcxstatplot(names,datas,runs,figname="fig1", live=False):
   app = dash.Dash()
   
   tablefig.update_layout(
-      title_text = 'Prediction Difference: Paired Wilcoxon signed-rank test',
-      xaxis=dict(
-          titlefont=dict(family='Open Sans'),
-          domain = [0,0.4],    
-      ), 
-      yaxis=dict(
-          titlefont=dict(
-            #   color="red",
-              family="Open Sans"
-          ),
-          tickfont=dict(
-            #   color="red"
-          ),
-        #   domain = [0, 0.4]
-      ),
-      xaxis2=dict(
-          domain=[0.5,1.],
-          anchor='y2'
-      ),
-      yaxis2=dict(title="p-values",
-          titlefont=dict(
-            #   color="blue",
-              family="Open Sans"
-          ),
-          anchor="x2",
-        #  domain = [0.5, 1.0]
-      ),
-      legend=dict(
-          orientation='h',
-          yanchor="bottom",
-          xanchor="right",
-          x=1.0, y=1.02,
-      ),
-      # template="plotly_white", #simple_white, none
-      plot_bgcolor ='white',
+      # title_text = 'Prediction Difference: Paired Wilcoxon signed-rank test',
       font=dict(family='Open Sans',size=8,color='black'),
-      width=600,
-    #   height=5*100,
+    #   width=400,
+      height=100,
     #   autosize=True,
-      margin=dict(l=5,r=5,b=50,t=50,pad=0
+      margin=dict(l=5,r=5,b=5,t=5,pad=0
       ),
   )
   # pyfig.write_image("fig1.pdf")
@@ -711,4 +694,112 @@ def wilcxstatplot(names,datas,runs,figname="fig1", live=False):
   if live:
     app.run_server(debug=False, port=8922, host='localhost', use_reloader=False)
     
+def effpaccplot(names,datas,runs,figname="fig1", live=False):
+  
+  # transfer to cpu  and switchback to numpy
+
+  torch.Tensor.ndim = property(lambda self: len(self.shape))  # Fix it
+  
+  pyfig = go.Figure()
+  
+  # Make text size larger
+#   for i in range(len(tablefig.layout.annotations)):
+#     tablefig.layout.annotations[i].font.size = 10
     
+  # Make traces for graph
+  pyfig.add_trace(go.Bar(
+      x=datas['Optimizer'], 
+      y=datas['Effective Test-Accuracy'],
+      name='Effective Test Accuracy',
+      xaxis='x', yaxis='y',
+      texttemplate="%{y:.4f}%",
+      textfont=dict(size=8, color='white'),
+      textangle = 0,
+      textposition= "inside",
+      cliponaxis = False,     
+    ))
+  
+
+  pio.renderers.default = "pdf+svg+plotly_mimetype+browser+png+vscode+colab+json"
+  # pio.kaleido.scope.default_scale=1.0
+  # pio.kaleido.scope.default_width=
+  # pio.kaleido.scope.default_height=
+  # pio.kaleido.scope.mathjax = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js"
+  app = dash.Dash()
+  
+  pyfig.update_layout(
+      uniformtext= dict(minsize = 8,mode = 'hide'),
+      xaxis=dict(
+          title="Optimizers",
+          titlefont=dict(family='Open Sans'),      
+      ), 
+      yaxis=dict(
+        #   autorange=True,
+          title="Effective Test Accuracy",
+          titlefont=dict(
+            #   color="red",
+              family="Open Sans"
+          ),
+          tickfont=dict(
+            #   color="red"
+      )),
+      width=3*100,
+      height=2*100,
+    #   autosize=True,
+      margin=dict(l=5,r=5,b=5,t=5,pad=0
+      ),
+      legend=dict(
+          orientation='h',
+          yanchor="bottom",
+          xanchor="right",
+          x=1.0, y=1.02,
+      ),
+      # template="plotly_white", #simple_white, none
+      plot_bgcolor ='white',
+      font=dict(family='Open Sans',size=8,color='black'),
+  )
+  pyfig.add_shape(
+      # Rectangle with reference to the plot
+      type="rect",
+      xref="paper",
+      yref="paper",
+      x0=0,y0=0,x1=1.0,y1=1.0,
+      line=dict(
+          color="black",
+          width=1,
+      )
+  )
+  pyfig.update_yaxes(
+      showline=True,
+      linecolor='black',
+      linewidth=0,
+      ticks='outside',
+      tickwidth=1,
+      tickcolor='black',
+      # range=[-0.01,1.01],
+  )
+  pyfig.update_xaxes(
+      showline=True,
+      linecolor='black',
+      linewidth=0,
+      ticks='outside',
+      tickwidth=1,
+      tickcolor='black',
+  )
+  # pyfig.write_image("fig1.pdf")
+  # 300dpi, width = 2inches, height = 1.5inches
+#   , width=1.5*300, height=1.5*300, 
+  pyfig.write_image(figname+".pdf",engine="kaleido")
+  pyfig.write_image(figname+".png",engine="kaleido")
+
+  # - offline plotly with mpl
+  # pfig = tls.mpl_to_plotly(fig) 
+  # plotly.offline.plot(pfig, 'plotly clone')
+
+  app.layout= html.Div([
+      dcc.Graph(id='mpl', figure=pyfig, mathjax=True),
+  ])
+
+  if live:
+    app.run_server(debug=False, port=8922, host='localhost', use_reloader=False)
+ 
