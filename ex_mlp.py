@@ -395,7 +395,7 @@ def train_loop(dataloader, model, loss_fcn, optimizer):
   
   return train_loss/num_batches, correct/size
       
-def test_loop(dataloader, model, loss_fcn):
+def loop_test(dataloader, model, loss_fcn):
   model.eval() # to ensure components like dropout is not used in inference.
   size = len(dataloader.dataset)
   num_batches = len(dataloader)
@@ -541,8 +541,8 @@ def dlnn_main(cfgs, runs:int=2, epochs:int=10):
 def main_opt_runners(cfgs, runs, epochs, gen_seed, batch_size, training_data, test_data, indim, class_num, channels, sgdlr, sgdmlr, adamlr, expdir):
 
   # -Load Data
-  train_dl = DataLoader(training_data,batch_size=batch_size, num_workers=8, shuffle=True,persistent_workers=True,pin_memory=True,worker_init_fn=seed_worker,generator=gen_seed)
-  test_dl = DataLoader(test_data,batch_size=batch_size,num_workers=4,worker_init_fn=seed_worker,persistent_workers=True,generator=gen_seed)
+  train_dl = DataLoader(training_data,batch_size=batch_size, num_workers=2, shuffle=True,persistent_workers=True,pin_memory=True,worker_init_fn=seed_worker,generator=gen_seed)
+  test_dl = DataLoader(test_data,batch_size=batch_size,num_workers=2,worker_init_fn=seed_worker,persistent_workers=True,generator=gen_seed)
   
   try:
     ground_truth = test_dl.dataset.targets.tolist()
@@ -610,7 +610,7 @@ def main_opt_runners(cfgs, runs, epochs, gen_seed, batch_size, training_data, te
       train_losses.append(loss)
       train_accs.append(acc)
       #
-      loss,acc,test_preds = test_loop(test_dl, mdl, loss_fcn)
+      loss,acc,test_preds = loop_test(test_dl, mdl, loss_fcn)
       dev_losses.append(loss)
       dev_accs.append(acc)
       
