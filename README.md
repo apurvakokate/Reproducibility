@@ -24,8 +24,9 @@ Consequently, we introduce a newer metric: *Effective Test Accuracy* as a better
 
 We hope, our findings can add to the adoption of *Effective Test Accuracy* by the research community when reporting neural network modeling results.
 
-# Use conda create -n <name of env> --file package-list.txt to create a conda environment with installed packages necessary to run the code
-# Use conda activate <name of env> to activate the environment
+
+######  Use conda create -n <name of env> --file package-list.txt to create a conda environment with installed packages necessary to run the code
+######  Use conda activate <name of env> to activate the environment
 
 
 # Technical Notes
