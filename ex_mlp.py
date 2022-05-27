@@ -164,26 +164,27 @@ def exp_dataset(cfgs):
   
   return training_data, test_data, indim, class_num, channels 
 
-# Models 
-class RemoveChannel(nn.Module):
-  def __init__(self,channel) -> None:
-      super().__init__()
-      # weight for collapsing channel
-      self.skip = False
-      if channel == 1:
-        self.skip = True
-      else:
-        W = torch.empty((channel,1), requires_grad=True) 
-        self.weights = nn.Parameter(W)
+# Models
+ 
+# class RemoveChannel(nn.Module):
+#   def __init__(self,channel) -> None:
+#       super().__init__()
+#       # weight for collapsing channel
+#       self.skip = False
+#       if channel == 1:
+#         self.skip = True
+#       else:
+#         W = torch.empty((channel,1), requires_grad=True) 
+#         self.weights = nn.Parameter(W)
         
-        # init weights
-        nn.init.kaiming_normal_(self.weights)
+#         # init weights
+#         nn.init.kaiming_normal_(self.weights)
       
-  def forward(self,x):
-    if not self.skip:
-      x = x.reshape(x.shape[0],x.shape[2],x.shape[3], x.shape[1])
-      x = torch.matmul(x, self.weights.squeeze())
-    return x
+#   def forward(self,x):
+#     if not self.skip:
+#       x = x.reshape(x.shape[0],x.shape[2],x.shape[3], x.shape[1])
+#       x = torch.matmul(x, self.weights.squeeze())
+#     return x
 
 # submodule
 def normlayer(norm_type, norm_dim):
@@ -430,7 +431,7 @@ def test_loop(dataloader, model, loss_fcn):
 def dlnn_main(cfgs, runs:int=2, epochs:int=10, noworkers:int=0):
   
   cfgs['runs'] = runs # should be > 1
-  cfgs['epochs'] = epochs
+  cfgs['epochs'] = epochs # should be > 1
   cfgs["noworkers"] = noworkers # noworkers, set number of workers to 0, irrespective of device
   
   # Experiment Group counter
@@ -855,27 +856,49 @@ def runner_cmps(cfgs, runs, epochs, optim_fullname, optimlist,expdir):
         
       
 if __name__=='__main__':
+  
   # clear cached modules if its folder exists
   shutil.rmtree("__pycache__",ignore_errors=True)
   
-  #TODO: instead of clear move to a subfolder in a oldexp folder 
-  # clear exp folders if exist
-  clear_old_expdir = True
+  # 
+  # clear experiment folders if exist,
+  # or archive in oldbins folder.
+  clear_old_expdir = False
+  
+  oldexpdir = glob.glob("./MLP_EXP_*")
   if clear_old_expdir:
-    oldexpdir = glob.glob("./MLP_EXP_*")
     for edir in oldexpdir:
       shutil.rmtree(edir,ignore_errors=True)
-        
-  torch.cuda.empty_cache() 
+  else:
+    num_cnt = random.randint(0,9999)
+    
+    while os.path.exists(f"oldbins/old_{num_cnt}"):
+      num_cnt = random.randint(0,9999)
+      
+    for edir in oldexpdir:
+      shutil.move(edir, f"oldbins/old_{num_cnt}")
+          
+  # empty cuda cahe.  
+  device = "cuda" if torch.cuda.is_available() else "cpu"
+  if device:
+    torch.cuda.empty_cache() 
   
+  # --------------------------------------
+  # load initial cfg.
   with open('config.json', 'r') as cfglist:
     cfgs = json.load(cfglist)
   
+  # configure and run experiments
   runs = 5 # > 1
   epochs = 1 # > 1
-  dlnn_main(cfgs,runs,epochs,0)
+  noworkers = 0 # 0 or 1 : bool
+  dlnn_main(cfgs,runs,epochs,noworkers)
   
-  torch.cuda.empty_cache() 
+  # --------------------------------------
+  
+  # empty cuda cahe.  
+  if device:
+    torch.cuda.empty_cache() 
   
   
   
