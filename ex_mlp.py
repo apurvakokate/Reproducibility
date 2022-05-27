@@ -880,7 +880,7 @@ if __name__=='__main__':
           
   # empty cuda cahe.  
   device = "cuda" if torch.cuda.is_available() else "cpu"
-  if device:
+  if device == "cuda":
     torch.cuda.empty_cache() 
   
   # --------------------------------------
@@ -897,7 +897,7 @@ if __name__=='__main__':
   # --------------------------------------
   
   # empty cuda cahe.  
-  if device:
+  if device == "cuda":
     torch.cuda.empty_cache() 
   
   
