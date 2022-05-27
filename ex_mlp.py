@@ -33,7 +33,7 @@ from scipy.stats import wilcoxon
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-import pytorch_lightning as pl
+# import pytorch_lightning as pl
   
 # import intel_extension_for_pytorch as ipex
 
@@ -442,7 +442,7 @@ def dlnn_main(cfgs, runs:int=2, epochs:int=10, noworkers:int=0):
   random.seed(seed)
   np.random.seed(seed)
   torch.manual_seed(seed)
-  pl.seed_everything(seed)
+  # pl.seed_everything(seed)
 
   # torch.use_deterministic_algorithms(True)
   if device == "cuda":
