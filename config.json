@@ -1,4 +1,5 @@
 {
+  "human": "any",
   "optim": "autosgd",
   "dataset": "cifar10",
   "model": "mlp",

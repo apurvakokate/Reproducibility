@@ -14,7 +14,7 @@ import dash
 from dash import Dash, dcc, html
 
 
-#
+# Train/Test Plots for a single run.
 def traintest(train_losses, train_accs, dev_losses, dev_accs, epochs, steps_per_epoch,figname="fig1", live=False):
   
   # transfer to cpu  and switchback to numpy
@@ -172,7 +172,7 @@ def traintest(train_losses, train_accs, dev_losses, dev_accs, epochs, steps_per_
   # pyfig.write_image("fig1.pdf")
   # 300dpi, width = 2inches, height = 1.5inches
   pyfig.write_image(figname+".pdf", width=2*300, height=1.5*300, engine="kaleido")
-  pyfig.write_image(figname+".png",engine="kaleido")
+  pyfig.write_image(figname+".png", scale=10, engine="kaleido")
 
 
   # - offline plotly with mpl
@@ -186,7 +186,7 @@ def traintest(train_losses, train_accs, dev_losses, dev_accs, epochs, steps_per_
   if live:
     app.run_server(debug=False, port=8922, host='localhost', use_reloader=False)
     
-#
+# Pred Diff cmps. across runs
 def pdiffplot(names,datas,runs,figname="fig1", live=False):
   
   # transfer to cpu  and switchback to numpy
@@ -283,7 +283,7 @@ def pdiffplot(names,datas,runs,figname="fig1", live=False):
   # 300dpi, width = 2inches, height = 1.5inches
 #   , width=1.5*300, height=1.5*300, 
   pyfig.write_image(figname+".pdf",engine="kaleido")
-  pyfig.write_image(figname+".png",engine="kaleido")
+  pyfig.write_image(figname+".png", scale=10, engine="kaleido")
 
   # - offline plotly with mpl
   # pfig = tls.mpl_to_plotly(fig) 
@@ -296,6 +296,7 @@ def pdiffplot(names,datas,runs,figname="fig1", live=False):
   if live:
     app.run_server(debug=False, port=8922, host='localhost', use_reloader=False)
 
+# Actual Pred. Diff cmps across runs
 def actpdiffplot(names,datas,runs,figname="fig1", live=False):
   
   # transfer to cpu  and switchback to numpy
@@ -392,7 +393,7 @@ def actpdiffplot(names,datas,runs,figname="fig1", live=False):
   # 300dpi, width = 2inches, height = 1.5inches
 #   , width=1.5*300, height=1.5*300, 
   pyfig.write_image(figname+".pdf",engine="kaleido")
-  pyfig.write_image(figname+".png",engine="kaleido")
+  pyfig.write_image(figname+".png", scale=10, engine="kaleido")
 
   # - offline plotly with mpl
   # pfig = tls.mpl_to_plotly(fig) 
@@ -404,7 +405,8 @@ def actpdiffplot(names,datas,runs,figname="fig1", live=False):
 
   if live:
     app.run_server(debug=False, port=8922, host='localhost', use_reloader=False)
-   
+  
+# not used.
 def pvalplot(names,datas,runs,figname="fig1", live=False):
   
   # transfer to cpu  and switchback to numpy
@@ -501,8 +503,7 @@ def pvalplot(names,datas,runs,figname="fig1", live=False):
   # 300dpi, width = 2inches, height = 1.5inches
 #   , width=1.5*300, height=1.5*300, 
   pyfig.write_image(figname+".pdf",engine="kaleido")
-  pyfig.write_image(figname+".png",engine="kaleido")
-
+  pyfig.write_image(figname+".png", scale=10, engine="kaleido")
   # - offline plotly with mpl
   # pfig = tls.mpl_to_plotly(fig) 
   # plotly.offline.plot(pfig, 'plotly clone')
@@ -514,7 +515,7 @@ def pvalplot(names,datas,runs,figname="fig1", live=False):
   if live:
     app.run_server(debug=False, port=8922, host='localhost', use_reloader=False)
    
-#
+# Test Accuracy cmps across runs
 def paccplot(names,datas,runs,figname="fig1", live=False):
   
   # transfer to cpu  and switchback to numpy
@@ -610,8 +611,8 @@ def paccplot(names,datas,runs,figname="fig1", live=False):
   # pyfig.write_image("fig1.pdf")
   # 300dpi, width = 2inches, height = 1.5inches
   pyfig.write_image(figname+".pdf", engine="kaleido")
-  pyfig.write_image(figname+".png",engine="kaleido")
-
+  pyfig.write_image(figname+".png", scale=10, engine="kaleido")
+  
   # - offline plotly with mpl
   # pfig = tls.mpl_to_plotly(fig) 
   # plotly.offline.plot(pfig, 'plotly clone')
@@ -623,7 +624,7 @@ def paccplot(names,datas,runs,figname="fig1", live=False):
   if live:
     app.run_server(debug=False, port=8922, host='localhost', use_reloader=False)
     
-#
+# P-value cmps across runs
 def wilcxstatplot(names,datas,runs,figname="fig1", live=False):
   
   # transfer to cpu  and switchback to numpy
@@ -681,7 +682,7 @@ def wilcxstatplot(names,datas,runs,figname="fig1", live=False):
   # 300dpi, width = 2inches, height = 1.5inches
 #   , width=1.5*300, height=1.5*300, 
   tablefig.write_image(figname+".pdf",engine="kaleido")
-  tablefig.write_image(figname+".png",engine="kaleido")
+  tablefig.write_image(figname+".png", scale=10, engine="kaleido")
 
   # - offline plotly with mpl
   # pfig = tls.mpl_to_plotly(fig) 
@@ -694,6 +695,7 @@ def wilcxstatplot(names,datas,runs,figname="fig1", live=False):
   if live:
     app.run_server(debug=False, port=8922, host='localhost', use_reloader=False)
     
+# Effective Test Accuracy cmps across runs
 def effpaccplot(names,datas,runs,figname="fig1", live=False):
   
   # transfer to cpu  and switchback to numpy
@@ -790,7 +792,7 @@ def effpaccplot(names,datas,runs,figname="fig1", live=False):
   # 300dpi, width = 2inches, height = 1.5inches
 #   , width=1.5*300, height=1.5*300, 
   pyfig.write_image(figname+".pdf",engine="kaleido")
-  pyfig.write_image(figname+".png",engine="kaleido")
+  pyfig.write_image(figname+".png", scale=10, engine="kaleido")
 
   # - offline plotly with mpl
   # pfig = tls.mpl_to_plotly(fig) 

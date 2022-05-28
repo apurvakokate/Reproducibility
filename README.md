@@ -1,10 +1,10 @@
 # Do Regularizers improve Reproducibility in Neural Networks?
 
 In this work, we empirically find out if common regularizers help to improve
-*test prediction consistency* across several runs. i.e: **prediction difference**
+*test prediction consistency* across several runs. i.e: *Prediction Difference*
 
 This is in contrast to the common convention that benchmarks regularizers on 
-test prediction consistency with respect to the ground truth predictions. i.e: test accuracy
+test prediction consistency with respect to the ground truth predictions. i.e: *0/1 Test Accuracy* or *0/1 Test Loss*
 
 Intutitively, regularizers *stabilize* the learning process. 
 
@@ -18,9 +18,9 @@ We find that despite, seed control, the model (representations) found by the neu
 
 Interestingly, even though the test accuracies across training runs seem close with respect to some decimal places. The prediction difference most always varies.
 
-Consequently, we introduce a newer metric: *Effective Test Accuracy* as a better measure of performance compared to *Test Accuracy*.
+Consequently, we introduce a newer metric: *Effective (0/1) Test Accuracy* as a better measure of *trusting* the performance compared to just *Test Accuracy*.
 
-*Effective Test Accuracy*  is the test accuracy measure of a neural net model subject to its prediction differences across an integer number of training runs.
+*Effective Test Accuracy*  is the test accuracy measure of a neural net model subject to its prediction differences across an number (integer) of training runs.
 
 We hope, our findings can add to the adoption of *Effective Test Accuracy* by the research community when reporting neural network modeling results.
 
