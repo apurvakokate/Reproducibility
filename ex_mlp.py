@@ -118,13 +118,13 @@ def exp_dataset(cfgs):
     training_data = datasets.CIFAR10(
       root=data_folder+"/CIFAR10",
       train=True,
-      download=False,
+      download=True,
       transform=transforms.Compose([ToTensor()]),
     )
     test_data = datasets.CIFAR10(
       root=data_folder+"/CIFAR10",
       train=False,
-      download= False,
+      download= True,
       transform=transforms.Compose([ToTensor()])
     )
     indim = [3,32,32]
@@ -134,13 +134,13 @@ def exp_dataset(cfgs):
     training_data = datasets.SVHN(
       root=data_folder+"/SVHN",
       split="train",
-      download=False,
+      download=True,
       transform=ToTensor(),
     )
     test_data = datasets.SVHN(
       root=data_folder+"/SVHN",
       split="test",
-      download= False,
+      download= True,
       transform=ToTensor()
     )
     indim = [3,32,32]
