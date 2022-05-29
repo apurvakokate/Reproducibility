@@ -879,22 +879,25 @@ if __name__=='__main__':
   # 
   # clear_old_expdir = False : clear experiment folders if exist,
   # clear_old_expdir = True : or otherwise: archive in oldbins folder.
-  clear_old_expdir = False # leave at False
-  
+  clear_old_expdir = False # leave at False to archive old experiments.
   oldexpdir = glob.glob("./MLP_EXP_*")
   if clear_old_expdir:
     pass
     # for edir in oldexpdir:
     #   shutil.rmtree(edir,ignore_errors=True)
   else:
+    # get a unique number for naming the archive dir.
     num_cnt = random.randint(0,9999)
-    
     while os.path.exists(f"oldbins/old_{num_cnt}"):
       num_cnt = random.randint(0,9999)
       
-    for edir in oldexpdir:
-      shutil.move(edir, f"oldbins/old_{num_cnt}")
-          
+    # move into the archive dir.
+    for id,edir in enumerate(oldexpdir):
+      if id == 0:
+        shutil.move(edir, f"oldbins/old_{num_cnt}/{edir}")
+      else:
+        shutil.move(edir, f"oldbins/old_{num_cnt}")
+        
   # empty cuda cahe.  
   device = "cuda" if torch.cuda.is_available() else "cpu"
   
@@ -917,7 +920,7 @@ if __name__=='__main__':
   runs = 5 
   
   # >= 1, set to 100 or 50 or 200 for sensible results, at which overfitting might occur
-  epochs = 50 
+  epochs = 10 # cifar10 and cifar100
   
   # >= 0, max setting: 8 , recommended: set to 2 or 4
   numworkers = 4
