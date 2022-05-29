@@ -911,13 +911,13 @@ if __name__=='__main__':
     cfgs["device"] = "cpu"
   
   # configure experiments
-  cfgs["human"] = "nischal" # options: olwasegun, apurva, nischal, any
+  cfgs["human"] = "oluwasegun" # options: olwasegun, apurva, nischal, any
   
   # > 1, set to 5 to reduce time spent on experiments
-  runs = 2 
+  runs = 5 
   
-  # >= 1, set to 100 or 50 or 200 for sensible results
-  epochs = 1 
+  # >= 1, set to 100 or 50 or 200 for sensible results, at which overfitting might occur
+  epochs = 50 
   
   # >= 0, max setting: 8 , recommended: set to 2 or 4
   numworkers = 4

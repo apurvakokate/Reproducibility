@@ -28,18 +28,56 @@ We hope, our findings can add to the adoption of *Effective Test Accuracy* by th
 
 # Technical Notes
 
+The following contains instruction that aid in the attempt to reproduce the python environment for this repo. Tested on Python Version: 3.10.
+
+The **[-]** prefix is used here to indicate a command to be entered in a terminal (e.g: bash or powershell or cmd).
+
 ### Conda
-To create a *conda* environment with the necessary dependencies needed run the code
+
+- [x] To create a *conda* environment with the necessary dependencies needed run the code
 
 [-] ```conda create -n <name of env> --file package-list.txt```
 
-To activate the *conda* environment
+- [x] To activate the *conda* environment
 
 [-] ```conda activate <name of env>``` 
 
 ### Pip
 
-Todo...
+Also, see https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
+
+
+- [x] Create a *venv* in any suitable directory. For example: desired *venv* name could be *regrep*
+
+[-] ``` python -m venv regrep ```
+
+- [x] for Linux
+
+  [-] ``` source regrep/bin/activate && alias python='regrep/bin/python3.x' ```
+
+- [x]  for Windows PowerShell
+
+  [-] ```.\regrep\Scripts\activate```  
+
+- [x] Install Dependencies
+
+[-] ```pip install --upgrade pip```
+
+[-] ```pip install -r package-list.txt```
+
+
+- [x] Run the experiments
+
+[-] ```python ex_mlp.py```
+
+- [x] Leave the *venv*
+
+[-] ```deactivate```
+
+- [x] Delete the *venv*
+
+[-] ```rm -rf regrep```
+
 
 ### Core python modules 
 ```
