@@ -1,19 +1,88 @@
 # Do Regularizers improve Reproducibility in Neural Networks?
 
 In this work, we empirically find out if common regularizers help to improve
-test prediction consistency across several runs. i.e: prediction difference
+*test prediction consistency* across several runs. i.e: *Prediction Difference*
 
 This is in contrast to the common convention that benchmarks regularizers on 
-test prediction consistency with respect to the ground truth predictions. i.e: test accuracy
+test prediction consistency with respect to the ground truth predictions. i.e: *0/1 Test Accuracy* or *0/1 Test Loss*
 
-Intutitively, regularizers stabilize the learning process, so we would expect that,
-if we eliminate most sources of variability by controlling the seeds used during training, 
-such as those used in the random initialization and sampling process
-we would obtain consistent test predictions, no matter how many times, we train the network.
+Intutitively, regularizers *stabilize* the learning process. 
 
-However our findings show that this is not so. 
-We find that despite, seed control, the model found by the network varies each time it is trained.
-Interestingly, even though test accuracy is close as much as possible. The prediction difference most always varies.
+So if we eliminate most sources of variability, 
+by controlling the seeds used during training, 
+such as: those used in the random initialization and sampling process
+we would expect to obtain consistent test predictions, no matter how many times, we train the network.
 
-We hope, our findings can add to the adoption of prediction difference tests when reporting neural net results.
+However our findings show that this may not be so. 
+We find that despite, seed control, the model (representations) found by the neural network learning process varies each time it is trained.
 
+Interestingly, even though the test accuracies across training runs seem close with respect to some decimal places. The prediction difference most always varies.
+
+Consequently, we introduce a newer metric: *Effective (0/1) Test Accuracy* as a better measure of *trusting* the performance compared to just *Test Accuracy*.
+
+*Effective Test Accuracy*  is the test accuracy measure of a neural net model subject to its prediction differences across an number (integer) of training runs.
+
+We hope, our findings can add to the adoption of *Effective Test Accuracy* by the research community when reporting neural network modeling results.
+
+
+
+# Technical Notes
+
+The following contains instruction that aid in the attempt to reproduce the python environment for this repo. Tested on Python Version: 3.10.
+
+The **[-]** prefix is used here to indicate a command to be entered in a terminal (e.g: bash or powershell or cmd).
+
+### Conda
+
+- [x] To create a *conda* environment with the necessary dependencies needed run the code
+
+[-] ```conda create -n <name of env> --file package-list.txt```
+
+- [x] To activate the *conda* environment
+
+[-] ```conda activate <name of env>``` 
+
+### Pip
+
+Also, see https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
+
+
+- [x] Create a *venv* in any suitable directory. For example: desired *venv* name could be *regrep*
+
+[-] ``` python -m venv regrep ```
+
+- [x] for Linux
+
+  [-] ``` source regrep/bin/activate && alias python='regrep/bin/python3.x' ```
+
+- [x]  for Windows PowerShell
+
+  [-] ```.\regrep\Scripts\activate```  
+
+- [x] Install Dependencies
+
+[-] ```pip install --upgrade pip```
+
+[-] ```pip install -r package-list.txt```
+
+
+- [x] Run the experiments
+
+[-] ```python ex_mlp.py```
+
+- [x] Leave the *venv*
+
+[-] ```deactivate```
+
+- [x] Delete the *venv*
+
+[-] ```rm -rf regrep```
+
+
+### Core python modules 
+```
+numpy==1.22.3
+dash==2.3.1
+scipy==1.8.0
+torch==1.11.0+cu113
+```

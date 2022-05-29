@@ -6,6 +6,10 @@ OREGON STATE UNIVERSITY: AI535 PROJECT SPRING 2022
 
 # Run this file to perform the neural net experiments and comparisons automatically.
 
+# See this:
+https://pytorch.org/docs/stable/notes/randomness.html
+
+
 '''
 from copy import deepcopy
 import glob
@@ -31,9 +35,8 @@ from scipy.stats import wilcoxon
 
 # import autosgd as metaopt
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
 
-import pytorch_lightning as pl
+# import pytorch_lightning as pl
   
 # import intel_extension_for_pytorch as ipex
 
@@ -115,13 +118,13 @@ def exp_dataset(cfgs):
     training_data = datasets.CIFAR10(
       root=data_folder+"/CIFAR10",
       train=True,
-      download=False,
+      download=True,
       transform=transforms.Compose([ToTensor()]),
     )
     test_data = datasets.CIFAR10(
       root=data_folder+"/CIFAR10",
       train=False,
-      download= False,
+      download= True,
       transform=transforms.Compose([ToTensor()])
     )
     indim = [3,32,32]
@@ -131,13 +134,13 @@ def exp_dataset(cfgs):
     training_data = datasets.SVHN(
       root=data_folder+"/SVHN",
       split="train",
-      download=False,
+      download=True,
       transform=ToTensor(),
     )
     test_data = datasets.SVHN(
       root=data_folder+"/SVHN",
       split="test",
-      download= False,
+      download= True,
       transform=ToTensor()
     )
     indim = [3,32,32]
@@ -164,26 +167,27 @@ def exp_dataset(cfgs):
   
   return training_data, test_data, indim, class_num, channels 
 
-# Models 
-class RemoveChannel(nn.Module):
-  def __init__(self,channel) -> None:
-      super().__init__()
-      # weight for collapsing channel
-      self.skip = False
-      if channel == 1:
-        self.skip = True
-      else:
-        W = torch.empty((channel,1), requires_grad=True) 
-        self.weights = nn.Parameter(W)
+# Models
+ 
+# class RemoveChannel(nn.Module):
+#   def __init__(self,channel) -> None:
+#       super().__init__()
+#       # weight for collapsing channel
+#       self.skip = False
+#       if channel == 1:
+#         self.skip = True
+#       else:
+#         W = torch.empty((channel,1), requires_grad=True) 
+#         self.weights = nn.Parameter(W)
         
-        # init weights
-        nn.init.kaiming_normal_(self.weights)
+#         # init weights
+#         nn.init.kaiming_normal_(self.weights)
       
-  def forward(self,x):
-    if not self.skip:
-      x = x.reshape(x.shape[0],x.shape[2],x.shape[3], x.shape[1])
-      x = torch.matmul(x, self.weights.squeeze())
-    return x
+#   def forward(self,x):
+#     if not self.skip:
+#       x = x.reshape(x.shape[0],x.shape[2],x.shape[3], x.shape[1])
+#       x = torch.matmul(x, self.weights.squeeze())
+#     return x
 
 # submodule
 def normlayer(norm_type, norm_dim):
@@ -357,7 +361,7 @@ def reset_all_weights_with_specific_layer_type(model: nn.Module, modules_type2re
     # Applies fn recursively to every submodule see: https://pytorch.org/docs/stable/generated/torch.nn.Module.html
     model.apply(init_weights)
 
-# -------------------------------------------
+# ---------seed worker----------------------------------
 def seed_worker(worker_id):
     worker_seed = 0 #torch.initial_seed() % (2**32)
     np.random.seed(worker_seed)
@@ -427,51 +431,61 @@ def test_loop(dataloader, model, loss_fcn):
 
 #--RUN-------------------------------------------------------------------------
 # run Main 
-def dlnn_main(cfgs, runs:int=2, epochs:int=10, noworkers:int=0):
+def dlnn_main(cfgs, runs:int=2, epochs:int=10, numworkers:int=0):
   
   cfgs['runs'] = runs # should be > 1
-  cfgs['epochs'] = epochs
-  cfgs["noworkers"] = noworkers # noworkers, set number of workers to 0, irrespective of device
+  cfgs['epochs'] = epochs # should be > 1
+  cfgs["numworkers"] = numworkers # noworkers, set number of workers to 0, irrespective of device
   
   # Experiment Group counter
   exp_cnter = 0
   
   # set seed for technical reproducibility
+  # if you change the seed in cfg,
+  # also change the worker seed in the fcn: seed_worker() defined above
   seed = cfgs['seed']
   random.seed(seed)
   np.random.seed(seed)
   torch.manual_seed(seed)
-  pl.seed_everything(seed)
+  # pl.seed_everything(seed)
 
   # torch.use_deterministic_algorithms(True)
-  if device == "cuda":
+  if cfgs["device"] == "cuda":
     torch.cuda.manual_seed_all(seed)
     torch.cuda.manual_seed(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.enabled = True
     torch.backends.cudnn.benchmark = False
-    cfgs["device"] = "cuda"
-  else:
-    cfgs["device"] = "cpu"
     
   # fix seed for batch generation
   gen_seed = torch.Generator()
   gen_seed.manual_seed(seed)
   
+  # set dataset to use according to assigned humans running the experiment
+  if cfgs["human"] == "oluwasegun":
+    data_fullname = ["CIFAR10","CIFAR100"]
+    datalist = ["cifar10", "cifar100"] #- oluwasegun
+  elif cfgs["human"] == "apurva":
+    data_fullname = ["MNIST", "FMNIST"]
+    datalist = ["mnist","fmnist"] #- apurva
+  elif cfgs["human"] == "nischal":
+    data_fullname = ["SVHN"]
+    datalist = ["svhn"] # - nischal
+  else:
+    data_fullname = ["MNIST", "FMNIST", "CIFAR10", "SVHN", "CIFAR100"]
+    datalist = ["mnist", "fmnist", "cifar10", "svhn", "cifar100"]
   
-  data_fullname = ["MNIST", "FMNIST", "CIFAR10", "SVHN", "CIFAR100"]
   optim_fullname = ["SGD","SGD+Momentum", "Adam"]
-
-  
-  datalist = ["mnist", "fmnist", "cifar10", "svhn", "cifar100"]
-  layerlist = [2,4,8,10,20]
-  residuallist = ["false", "true"]
   optimlist = ["sgd","sgdmom","adam"]
-  normlist = ["false","layer","batch"]
-  noiselist = ["false","dropout"]
-  lnoiselist = ["false","wdecay"]
    
+  layerlist = [2,6,20]
+  residuallist = ["false", "true"]
+  normlist = ["false","layer","batch"] 
+  lnoiselist = ["false","wdecay"]
 
+  cfgs["noise"] = "false" # noiselist = ["false","dropout"]
+ 
+   
   # -Specify main hyperparameters:
   # number of epochs, batch size, learning rate.
   batch_size = 128
@@ -513,44 +527,47 @@ def dlnn_main(cfgs, runs:int=2, epochs:int=10, noworkers:int=0):
       for mod, lnoise_opt in enumerate(lnoiselist):
         cfgs["lnoise"] = lnoise_opt
         
-        for lod, noise_opt in enumerate(noiselist):
-          cfgs["noise"] = noise_opt
+        # for lod, noise_opt in enumerate(noiselist):
+        #   cfgs["noise"] = noise_opt
         
-          for kod, norm_opt in enumerate(normlist):
-            cfgs['norms'] = norm_opt
+        for kod, norm_opt in enumerate(normlist):
+          cfgs['norms'] = norm_opt
+        
+          for jod, res_opt in enumerate(residuallist):
+            cfgs["residual"] = res_opt # should be even
           
-            for jod, res_opt in enumerate(residuallist):
-              cfgs["residual"] = res_opt # should be even
+            # Experiments-Compasrisons
             
-              # Experiments-Compasrisons
-              
-              # increment experiment. count
-              exp_cnter +=1
-              curdir = os.getcwd()
-              exp_dir = f"{curdir}/MLP_EXP_{exp_cnter}"     
-              os.makedirs(exp_dir, exist_ok=True)
+            # increment experiment. count
+            exp_cnter +=1
+            curdir = os.getcwd()
+            exp_dir = f"{curdir}/MLP_EXP_{exp_cnter}"     
+            os.makedirs(exp_dir, exist_ok=True)
 
-              for iod, optim_name in enumerate(optimlist):
-                
-                cfgs['optim'] = optim_name
-                print(f"{optim_fullname[iod]}\n----------")
-                
-                # -- RUNS for each OPTIMs under current cfg
-                train_dl, test_dl, ground_truth, steps_per_epoch, mdl, loss_fcn, optimizer, train_losses, dev_losses, train_accs, dev_accs, preds_list,PathStr = main_opt_runners(cfgs, runs, epochs, gen_seed, batch_size, training_data, test_data, indim, class_num, channels, sgdlr, sgdmlr, adamlr, exp_dir)
-                            
-              # -- COMPARE OPTIMs under current cfg:      
-              runner_cmps(cfgs, runs, epochs, optim_fullname, optimlist, exp_dir)
+            for iod, optim_name in enumerate(optimlist):
+              
+              cfgs['optim'] = optim_name
+              print(f"{optim_fullname[iod]}\n----------")
+              
+              # -- RUNS for each OPTIMs under current cfg
+              # train_dl, test_dl, ground_truth, steps_per_epoch, mdl, loss_fcn, optimizer, train_losses, dev_losses, train_accs, dev_accs, preds_list,PathStr = 
+              main_opt_runners(cfgs, runs, epochs, gen_seed, batch_size, training_data, test_data, indim, class_num, channels, sgdlr, sgdmlr, adamlr, exp_dir)
+                          
+            # -- COMPARE OPTIMs under current cfg:      
+            runner_cmps(cfgs, runs, epochs, optim_fullname, optimlist, exp_dir)
+  
+  print(f"SUCCESS: End of Experiments!")
 
 # main runs for each optims.
 def main_opt_runners(cfgs, runs, epochs, gen_seed, batch_size, training_data, test_data, indim, class_num, channels, sgdlr, sgdmlr, adamlr, expdir):
 
   # -Load Data
   
-  if cfgs["device"] == "cpu" or cfgs["noworkers"]:
+  if cfgs["device"] == "cpu" or not cfgs["numworkers"]:
       train_dl = DataLoader(training_data,batch_size=batch_size,shuffle=True,generator=gen_seed)
       test_dl = DataLoader(test_data,batch_size=batch_size,generator=gen_seed)
   else:
-      train_dl = DataLoader(training_data,batch_size=batch_size, num_workers=6, shuffle=True,persistent_workers=True,pin_memory=True,worker_init_fn=seed_worker,generator=gen_seed)
+      train_dl = DataLoader(training_data,batch_size=batch_size, num_workers=cfgs["numworkers"], shuffle=True,persistent_workers=True,pin_memory=True,worker_init_fn=seed_worker,generator=gen_seed)
       test_dl = DataLoader(test_data,batch_size=batch_size,num_workers=2,worker_init_fn=seed_worker,persistent_workers=True,generator=gen_seed)
   
   try:
@@ -855,27 +872,64 @@ def runner_cmps(cfgs, runs, epochs, optim_fullname, optimlist,expdir):
         
       
 if __name__=='__main__':
+  
   # clear cached modules if its folder exists
   shutil.rmtree("__pycache__",ignore_errors=True)
   
-  #TODO: instead of clear move to a subfolder in a oldexp folder 
-  # clear exp folders if exist
-  clear_old_expdir = True
-  if clear_old_expdir:
-    oldexpdir = glob.glob("./MLP_EXP_*")
-    for edir in oldexpdir:
-      shutil.rmtree(edir,ignore_errors=True)
-        
-  torch.cuda.empty_cache() 
+  # 
+  # clear_old_expdir = False : clear experiment folders if exist,
+  # clear_old_expdir = True : or otherwise: archive in oldbins folder.
+  clear_old_expdir = False # leave at False
   
+  oldexpdir = glob.glob("./MLP_EXP_*")
+  if clear_old_expdir:
+    pass
+    # for edir in oldexpdir:
+    #   shutil.rmtree(edir,ignore_errors=True)
+  else:
+    num_cnt = random.randint(0,9999)
+    
+    while os.path.exists(f"oldbins/old_{num_cnt}"):
+      num_cnt = random.randint(0,9999)
+      
+    for edir in oldexpdir:
+      shutil.move(edir, f"oldbins/old_{num_cnt}")
+          
+  # empty cuda cahe.  
+  device = "cuda" if torch.cuda.is_available() else "cpu"
+  
+  # --------------------------------------
+  # load initial cfg.
   with open('config.json', 'r') as cfglist:
     cfgs = json.load(cfglist)
   
-  runs = 5 # > 1
-  epochs = 1 # > 1
-  dlnn_main(cfgs,runs,epochs,0)
+  # set main compute device: cuda or cpu
+  if device == "cuda":
+    cfgs["device"] = "cuda"
+    torch.cuda.empty_cache() 
+  else:
+    cfgs["device"] = "cpu"
   
-  torch.cuda.empty_cache() 
+  # configure experiments
+  cfgs["human"] = "oluwasegun" # options: olwasegun, apurva, nischal, any
+  
+  # > 1, set to 5 to reduce time spent on experiments
+  runs = 5 
+  
+  # >= 1, set to 100 or 50 or 200 for sensible results, at which overfitting might occur
+  epochs = 50 
+  
+  # >= 0, max setting: 8 , recommended: set to 2 or 4
+  numworkers = 4
+  
+  # run experiments wrt cfgs.
+  dlnn_main(cfgs,runs,epochs,numworkers)
+  
+  # --------------------------------------
+  
+  # empty cuda cahe.  
+  if device == "cuda":
+    torch.cuda.empty_cache() 
   
   
   
