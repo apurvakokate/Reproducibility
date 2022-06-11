@@ -735,7 +735,7 @@ def main_opt_runners(cfgs, runs, epochs, gen_seed, batch_size, training_data, te
     med_stat, pval = wilcoxon(pdiff_mets)
   except ValueError:
     # ValueError: zero_method 'wilcox' and 'pratt' do not work if x - y is zero for all elements.
-    med_stat, pval = -1, 0.5 # indicative of when the predictions are the same 
+    med_stat, pval = -1, 0.5 # indicative of when the predictions are the same,
     
   # if pval isn't 0.5, we would reject the null hypothesis at a confidence level of 5%, concluding that the pred. diff across runs is significant.
   

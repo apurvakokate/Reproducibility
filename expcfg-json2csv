@@ -1,0 +1,57 @@
+import json
+import glob 
+import os, pathlib
+import shutil
+from pathlib import Path
+# importing packages
+import pandas as pd
+
+# df = df.append(dicts, ignore_index=True, sort=False)
+
+# name of data
+datafname = ""
+# datafname = "EXPS_CIFAR10"
+# datafname = "EXPS_CIFAR100"
+# datafname = "EXPS_FMNIST"
+# datafname = "EXPS_MNIST"
+# datafname = "EXPS_SVHN"
+
+def expcfg_json2csv(datafname):
+    dirnm = glob.glob(f"{datafname}/MLP_EXP_[0-9]")
+
+    if len(dirnm)!=0:
+      for the_dir in dirnm:
+        # Renaming the file
+        oldname = Path(the_dir)
+        newname = the_dir.replace("EXP_", "EXP_0")
+        oldname.rename(newname)
+
+    filedirs = glob.glob(f"{datafname}/MLP_EXP_*/stores/exp_cfg")
+    filedirs = sorted(filedirs)
+
+    df = pd.DataFrame()
+    # df2 = pd.DataFrame()
+    for expdir in filedirs:
+      # load json file using pandas
+      filejsons = glob.glob(f"{expdir}/*.json")
+      for jsonfile in filejsons:
+        # with open(jsonfile, 'rb') as cfglist:
+        #   cfgs = json.load(cfglist)
+        # df = df.append(cfgs, ignore_index=True, sort=False)
+        dfjson = pd.read_json(jsonfile,lines=True)
+        # use pandas.concat method
+        df = pd.concat([df,dfjson])
+
+    # convert dataframe to csv file
+    df.to_csv(f"represult_{datafname}.csv",index=False)
+
+    # df.to_excel(f"represult_{datafname}.xlsx",index=False)
+    with pd.ExcelWriter(f"represult_{datafname}.xlsx") as writer:
+      df.to_excel(writer,index=False)
+
+# convert to csv and xlsx file
+expcfg_json2csv(datafname)
+# load the resultant csv file
+result = pd.read_csv(f"represult_{datafname}.csv")
+# and view the data
+print(result)
